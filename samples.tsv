@@ -1,0 +1,2 @@
+group	condition	control	reads	name	type	time
+MWF1	Drug	0	/Users/user/slamseq/fastq/MWF1_S1_R1_001.fastq.gz	MWF1	pulse	60
