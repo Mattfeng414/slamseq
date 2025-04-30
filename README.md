@@ -27,7 +27,7 @@ This fork introduces the following customizations optimized for _Saccharomyces c
 
 ```bash
 cd /path/to/slamseq
-conda deactivate   # Ensure Java 11–18 is on PATH
+# Ensure Java 11–18 is on PATH
 
 nextflow run . \
   --input        samples.tsv \
