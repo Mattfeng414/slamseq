@@ -1,7 +1,5 @@
 # ![nf-core/slamseq](docs/images/nf-core-slamseq_logo.png)
 
-[![CI Status](https://github.com/Mattfeng414/slamseq/actions/workflows/ci.yml/badge.svg)](https://github.com/Mattfeng414/slamseq/actions/workflows/ci.yml)
-[![Lint Status](https://github.com/Mattfeng414/slamseq/actions/workflows/linting.yml/badge.svg)](https://github.com/Mattfeng414/slamseq/actions/workflows/linting.yml)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 
 
