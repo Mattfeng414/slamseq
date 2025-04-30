@@ -1,95 +1,49 @@
 # ![nf-core/slamseq](docs/images/nf-core-slamseq_logo.png)
 
-[![GitHub Actions CI Status](https://github.com/nf-core/slamseq/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/slamseq/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/slamseq/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/slamseq/actions)
+[![CI Status](https://github.com/Mattfeng414/slamseq/actions/workflows/ci.yml/badge.svg)](https://github.com/Mattfeng414/slamseq/actions/workflows/ci.yml)
+[![Lint Status](https://github.com/Mattfeng414/slamseq/actions/workflows/linting.yml/badge.svg)](https://github.com/Mattfeng414/slamseq/actions/workflows/linting.yml)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
-[![Docker](https://img.shields.io/docker/automated/nfcore/slamseq.svg)](https://hub.docker.com/r/nfcore/slamseq)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3826585.svg)](https://doi.org/10.5281/zenodo.3826585)
 
-## Introduction
+# Custom Yeast SLAMseq Setup (Mattfeng414 Fork)
 
-**nf-core/slamseq** is a bioinformatics analysis pipeline used for [SLAMSeq](https://doi.org/10.1038/nmeth.4435) sequencing data.
+> **Note**: For full pipeline documentation and usage, please see the [original nf-core/slamseq README](https://github.com/nf-core/slamseq#readme).
 
-The workflow processes SLAMSeq datasets using [Slamdunk](https://doi.org/10.1186/s12859-019-2849-7) and infers [direct transcriptional targets](https://doi.org/10.1126/science.aao2793) using [DESeq2](https://doi.org/10.1186/s13059-014-0550-8).
+This fork introduces the following customizations optimized for _Saccharomyces cerevisiae_ SLAMseq data:
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+- **Reference header renaming**: Updated `reference/yeast.fa` headers from NCBI accessions to `>chrI…chrXVI` to match custom BED intervals. Reference genome obtained from the Saccharomyces Genome Database (SGD).
+- **Custom 3′-UTR BED**: `bed/S10-3UTR_reading_windows.bed` covering all nuclear chromosomes for UTR rate calculations. Original intervals defined in Alalam H, Zepeda-Martínez JA, Sunnerhagen P. _Global SLAM-seq for accurate mRNA decay determination and identification of NMD targets._ RNA. 2022 Jun;28(6):905-915. doi:10.1261/rna.079077.121. PMCID: PMC9074897.
+- **Resource caps** via `local.config`:
+  ```groovy
+  process {
+    cpus   = 4
+    memory = '16 GB'
+  }
+  ```
+- **Read-length override**: Use `--read_length 109` to match trimmed read length and avoid array bounds errors in `tcperreadpos`.
+- **Skip DESeq2**: Default `--skip_deseq2` for analyses focusing on raw conversion rates without differential expression.
 
-## Quick Start
+---
 
-i. Install [`nextflow`](https://nf-co.re/usage/installation)
-
-ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))
-
-iii. Download the pipeline and test it on a minimal dataset with a single command
-
-```bash
-nextflow run nf-core/slamseq -profile test,<docker/singularity/conda/institute>
-```
-
-> Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-
-iv. Start running your own analysis!
+## Quick Launch
 
 ```bash
-nextflow run nf-core/slamseq -profile <docker/singularity/conda/institute> --input design.tsv --genome GRCh38
+cd /path/to/slamseq
+conda deactivate   # Ensure Java 11–18 is on PATH
+
+nextflow run . \
+  --input        samples.tsv \
+  --fasta        reference/yeast.fa \
+  --gtf          reference/yeast.gtf \
+  --bed          bed/S10-3UTR_reading_windows.bed \
+  --skip_deseq2 \
+  --max_cpus     4 \
+  --max_memory   16.GB \
+  --read_length  109 \
+  -profile       docker \
+  --outdir       results
 ```
 
-See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+These settings have been validated on macOS with Docker and Java 17.
 
-## Documentation
 
-The nf-core/slamseq pipeline comes with documentation about the pipeline, found in the `docs/` directory:
-
-1. [Installation](https://nf-co.re/usage/installation)
-2. Pipeline configuration
-    * [Local installation](https://nf-co.re/usage/local_installation)
-    * [Adding your own system config](https://nf-co.re/usage/adding_own_config)
-    * [Reference genomes](https://nf-co.re/usage/reference_genomes)
-3. [Running the pipeline](docs/usage.md)
-4. [Output and how to interpret the results](docs/output.md)
-5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
-
-## Credits
-
-nf-core/slamseq was originally written by Tobias Neumann ([@t-neumann](https://github.com/t-neumann)) for the use at the [IMP Vienna](https://www.imp.ac.at/).
-
-Many thanks to other who have helped out along the way too, including (but not limited to):
-[@apeltzer](https://github.com/apeltzer),
-[@drpatelh](https://github.com/drpatelh),
-[@pditommaso](https://github.com/pditommaso),
-[@maxulysse](https://github.com/MaxUlysse),
-[@ewels](https://github.com/ewels),
-[@zethson](https://github.com/Zethson),
-[@bgruening](https://github.com/bgruening),
-[@micans](https://github.com/micans).
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/slamseq) (you can join with [this invite](https://nf-co.re/join/slack)).
-
-## Citation
-
-If you use  nf-core/slamseq for your analysis, please cite it using the following doi: [10.5281/zenodo.3826585](https://doi.org/10.5281/zenodo.3826585)
-
-You can cite `slamdunk` as follows:
-
-> **Quantification of experimentally induced nucleotide conversions in high-throughput sequencing datasets.**
->
-> Tobias Neumann, Veronika A. Herzog, Matthias Muhar, Arndt von Haeseler, Johannes Zuber, Stefan L. Ameres & Philipp Rescheneder.
->
-> _BMC Bioinformatics_ 2019 May 20. doi: [10.1186/s12859-019-2849-7](https://doi.org/10.1186/s12859-019-2849-7).
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).  
-> ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
